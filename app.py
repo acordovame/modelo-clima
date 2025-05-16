@@ -29,7 +29,7 @@ def predecir():
         entrada_scaled = entrada_scaled.reshape(1, 24, 3)
 
         # Predecir
-        pred_scaled = model.predict(entrada_scaled)
+        pred_scaled = modelo.predict(entrada_scaled)
         pred = scaler.inverse_transform(pred_scaled)
 
         return jsonify({'prediccion': pred.tolist()})
