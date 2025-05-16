@@ -5,7 +5,7 @@ import numpy as np
 app = Flask(__name__)
 
 # Carga el modelo
-modelo = joblib.load("modelo.pkl")
+modelo = joblib.load("modelo.keras")
 
 @app.route("/")
 def home():
