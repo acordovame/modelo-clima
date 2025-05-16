@@ -1,27 +1,21 @@
 from flask import Flask, request, jsonify
+from keras.models import load_model
 import joblib
 import numpy as np
 
 app = Flask(__name__)
 
-# Carga el modelo
-modelo = joblib.load("modelo.keras")
+# Cargar modelo y scaler correctamente
+modelo = load_model("modelo.keras")         # ✅ Keras model
+scaler = joblib.load("scaler.pkl")          # ✅ scikit-learn scaler
 
-@app.route("/")
-def home():
-    return "API de Machine Learning funcionando"
-
-@app.route("/predecir", methods=["POST"])
+@app.route('/predecir', methods=['POST'])
 def predecir():
-    data = request.get_json()
-    if not data or 'features' not in data:
-        return jsonify({"error": "Faltan datos"}), 400
-
-    try:
-        prediccion = modelo.predict([np.array(data["features"])])
-        return jsonify({"resultado": prediccion[0]})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    data = request.json  # {"input": [[22.1, 64, 1013]]}
+    input_array = np.array(data['input'])
+    scaled = scaler.transform(input_array)
+    prediction = modelo.predict(scaled)
+    return jsonify(prediccion=prediction.tolist())
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    app.run(host="0.0.0.0", port=5000)
