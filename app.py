@@ -17,12 +17,23 @@ def index():
 @app.route('/predecir', methods=['POST'])
 def predecir():
     try:
-        data = request.json  # Ejemplo: {"input": [[22.1, 64.2, 1012.3]]}
-        entrada = np.array(data['input'])  # debe ser una lista de listas
-        entrada_esc = scaler.transform(entrada)
-        pred = modelo.predict(entrada_esc)
-        pred_inv = scaler.inverse_transform(pred)
-        return jsonify({'prediccion': pred_inv.tolist()})
+        data = request.get_json(force=True)
+        entrada = np.array(data['input'])  # Esperado: (1, 24, 3)
+
+        if entrada.shape != (1, 24, 3):
+            return jsonify({'error': f'Forma inválida: {entrada.shape}. Se esperaba (1, 24, 3).'}), 400
+
+        # Escalar
+        entrada_2d = entrada.reshape(-1, 3)  # (24, 3)
+        entrada_scaled = scaler.transform(entrada_2d)
+        entrada_scaled = entrada_scaled.reshape(1, 24, 3)
+
+        # Predecir
+        pred_scaled = model.predict(entrada_scaled)
+        pred = scaler.inverse_transform(pred_scaled)
+
+        return jsonify({'prediccion': pred.tolist()})
+
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
